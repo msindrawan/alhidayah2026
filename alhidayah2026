@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Masjid Al-Hidayah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            850: '#064e3b',
+                            950: '#022c22',
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Amiri', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .islamic-pattern {
+            background-color: #064e3b;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230f766e' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Custom scrollbar for Tarawih list */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col text-sm">
+
+    <!-- Header Section -->
+    <header class="islamic-pattern text-white shadow relative overflow-hidden flex-shrink-0">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-emerald-950/80"></div>
+        <div class="container max-w-2xl mx-auto px-4 py-6 relative z-10 text-center">
+            <div class="flex items-center justify-center space-x-2 mb-2">
+                <div class="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-gold-400/30">
+                    <i class="fas fa-mosque text-xl text-gold-400"></i>
+                </div>
+                <h1 class="text-2xl font-bold font-serif tracking-wide">Masjid Al-Hidayah</h1>
+            </div>
+            <p class="text-emerald-100 text-sm font-light">Perumahan Puri Hijau - Bandar Lampung</p>
+        </div>
+    </header>
+
+    <!-- Tab Navigation (Sticky) -->
+    <div class="sticky top-0 z-30 bg-white shadow-sm border-b border-gray-200">
+        <div class="container max-w-2xl mx-auto flex">
+            <button onclick="switchTab('jumat')" id="btn-jumat" class="flex-1 py-3 text-center font-semibold text-emerald-700 border-b-2 border-emerald-600 bg-emerald-50/50 transition-all focus:outline-none">
+                <i class="fas fa-calendar-day mr-2"></i>Khatib Jumat
+            </button>
+            <button onclick="switchTab('tarawih')" id="btn-tarawih" class="flex-1 py-3 text-center font-medium text-gray-500 border-b-2 border-transparent hover:text-emerald-600 transition-all focus:outline-none">
+                <i class="fas fa-moon mr-2"></i>Imam Tarawih
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow container max-w-2xl mx-auto px-4 py-4 z-20 relative">
+        
+        <!-- CONTENT TAB 1: JADWAL JUMAT -->
+        <div id="tab-jumat" class="block">
+            <div id="loading-indicator" class="text-center py-10">
+                <i class="fas fa-spinner fa-spin text-2xl text-emerald-600"></i>
+                <p class="mt-2 text-xs text-gray-500">Mengambil Data Adzan Bandar Lampung (Kemenag RI)...</p>
+            </div>
+            
+            <div id="schedule-container" class="space-y-3 hidden">
+                <!-- Accordion Items injected by JS -->
+            </div>
+        </div>
+
+        <!-- CONTENT TAB 2: JADWAL TARAWIH -->
+        <div id="tab-tarawih" class="hidden">
+            <!-- Search/Filter -->
+            <div class="mb-4 pt-2">
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="Cari nama imam atau tanggal..." 
+                        class="w-full py-3 pl-10 pr-4 rounded-xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all text-sm bg-white">
+                    <i class="fas fa-search text-gray-400 absolute left-3.5 top-3.5"></i>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="flex items-center gap-2 mb-4 px-1">
+                <div class="w-3 h-3 bg-amber-100 border border-amber-300 rounded-sm"></div>
+                <span class="text-xs text-slate-500">Imam & Kultum (Malam 2-11)</span>
+                <div class="w-3 h-3 bg-white border border-gray-200 rounded-sm ml-2"></div>
+                <span class="text-xs text-slate-500">Imam Tarawih</span>
+            </div>
+
+            <!-- List Container -->
+            <div id="tarawihList" class="space-y-2 pb-6">
+                <!-- Rows injected by JS -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden flex flex-col items-center justify-center py-12 text-gray-400">
+                <i class="far fa-folder-open text-3xl mb-2"></i>
+                <p class="text-sm">Jadwal tidak ditemukan</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-auto text-xs">
+        <div class="container max-w-2xl mx-auto px-4 py-6">
+            <!-- Catatan Penting -->
+            <div class="bg-red-50 border-l-2 border-red-500 p-3 rounded-r shadow-sm mb-6">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
+                    </div>
+                    <div class="ml-2">
+                        <h3 class="font-medium text-red-800">Catatan Penting</h3>
+                        <p class="text-red-700 mt-0.5 leading-tight">
+                            Jika petugas (Khatib/Imam/Bilal) berhalangan hadir mohon pemberitahuan <strong>2 hari sebelumnya</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aplikasi Lainnya Section -->
+            <div class="mb-6">
+                <h3 class="font-bold text-emerald-900 mb-3 text-center uppercase tracking-wide border-b border-gray-100 pb-2">Aplikasi Bermanfaat Lainnya</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <a href="https://msindrawan.github.io/jamsholat/" target="_blank" class="flex items-center p-2 rounded-lg border border-gray-100 bg-gray-50 hover:bg-emerald-50 transition-all group">
+                        <i class="fas fa-clock text-emerald-600 mr-2"></i> <span class="group-hover:text-emerald-800">Jam Sholat</span>
+                    </a>
+                    <a href="https://hitungwarisku.pages.dev/" target="_blank" class="flex items-center p-2 rounded-lg border border-gray-100 bg-gray-50 hover:bg-emerald-50 transition-all group">
+                        <i class="fas fa-file-invoice-dollar text-emerald-600 mr-2"></i> <span class="group-hover:text-emerald-800">Kalkulator Waris</span>
+                    </a>
+                    <a href="https://hitungzakat.pages.dev/" target="_blank" class="flex items-center p-2 rounded-lg border border-gray-100 bg-gray-50 hover:bg-emerald-50 transition-all group">
+                        <i class="fas fa-coins text-emerald-600 mr-2"></i> <span class="group-hover:text-emerald-800">Hitung Zakat</span>
+                    </a>
+                    <a href="https://kalkulatorsyariah.pages.dev/" target="_blank" class="flex items-center p-2 rounded-lg border border-gray-100 bg-gray-50 hover:bg-emerald-50 transition-all group">
+                        <i class="fas fa-scale-balanced text-emerald-600 mr-2"></i> <span class="group-hover:text-emerald-800">Kalkulator Talak</span>
+                    </a>
+                    <a href="https://bagihasil-43q.pages.dev/" target="_blank" class="flex items-center p-2 rounded-lg border border-gray-100 bg-gray-50 hover:bg-emerald-50 transition-all group">
+                        <i class="fas fa-handshake text-emerald-600 mr-2"></i> <span class="group-hover:text-emerald-800">Bagi Hasil</span>
+                    </a>
+                    <a href="https://msindrawan.github.io/tabunganqurban/" target="_blank" class="flex items-center p-2 rounded-lg border border-gray-100 bg-gray-50 hover:bg-emerald-50 transition-all group">
+                        <i class="fas fa-piggy-bank text-emerald-600 mr-2"></i> <span class="group-hover:text-emerald-800">Tabungan Qurban</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="text-center mt-6 text-gray-400">
+                &copy; 2026 DKM Masjid Al-Hidayah.<br>
+                <span class="text-[10px] opacity-75 font-mono">Versi 1.3 (Gabungan)</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- LOGIC TAB NAVIGATION ---
+        function switchTab(tabName) {
+            const tabJumat = document.getElementById('tab-jumat');
+            const tabTarawih = document.getElementById('tab-tarawih');
+            const btnJumat = document.getElementById('btn-jumat');
+            const btnTarawih = document.getElementById('btn-tarawih');
+
+            if (tabName === 'jumat') {
+                tabJumat.classList.remove('hidden');
+                tabTarawih.classList.add('hidden');
+                
+                // Active State Jumat
+                btnJumat.className = "flex-1 py-3 text-center font-bold text-emerald-700 border-b-2 border-emerald-600 bg-emerald-50/50 transition-all";
+                // Inactive State Tarawih
+                btnTarawih.className = "flex-1 py-3 text-center font-medium text-gray-500 border-b-2 border-transparent hover:text-emerald-600 transition-all";
+            } else {
+                tabJumat.classList.add('hidden');
+                tabTarawih.classList.remove('hidden');
+                
+                // Inactive State Jumat
+                btnJumat.className = "flex-1 py-3 text-center font-medium text-gray-500 border-b-2 border-transparent hover:text-emerald-600 transition-all";
+                // Active State Tarawih
+                btnTarawih.className = "flex-1 py-3 text-center font-bold text-emerald-700 border-b-2 border-emerald-600 bg-emerald-50/50 transition-all";
+            }
+        }
+
+        // --- LOGIC JADWAL JUMAT (VERSION 1.2) ---
+        const khatibRotation = {
+            1: "Ust. Dr. Riyuzen Praja Tuala, M. Pd.",
+            2: "Ust. Hanafi",
+            3: "Ust. Dr. A. Noor Islahuddin, Lc. LL.M",
+            4: "Ust. Husnuddin A. Ma.",
+            5: "Ust. M. Fathon Zein, S. Pd."
+        };
+
+        const targetYear = 2026;
+        const startMonth = 0; // Januari
+        const endMonth = 5;   // Juni
+        let prayerTimesCache = {};
+
+        const hijriRefDates = [
+            { date: new Date(2026, 0, 1),  hDay: 12, hMonth: 'Rajab',       hYear: 1447 },
+            { date: new Date(2026, 0, 20), hDay: 1,  hMonth: "Sya'ban",     hYear: 1447 },
+            { date: new Date(2026, 1, 19), hDay: 1,  hMonth: 'Ramadhan',    hYear: 1447 },
+            { date: new Date(2026, 2, 21), hDay: 1,  hMonth: 'Syawal',      hYear: 1447 },
+            { date: new Date(2026, 3, 19), hDay: 1,  hMonth: "Dzulqa'dah",  hYear: 1447 },
+            { date: new Date(2026, 4, 18), hDay: 1,  hMonth: 'Dzulhijjah',  hYear: 1447 },
+            { date: new Date(2026, 5, 16), hDay: 1,  hMonth: 'Muharram',    hYear: 1448 }
+        ];
+
+        function getMonthName(monthIndex) {
+            const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            return months[monthIndex];
+        }
+
+        function getKemenagHijri(date) {
+            for (let i = hijriRefDates.length - 1; i >= 0; i--) {
+                const ref = hijriRefDates[i];
+                if (date >= ref.date) {
+                    const diffTime = Math.abs(date - ref.date);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                    const currentHDay = ref.hDay + diffDays;
+                    return `${currentHDay} ${ref.hMonth} ${ref.hYear} H`;
+                }
+            }
+            return "";
+        }
+
+        function toMasehi(date) {
+            return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+        }
+
+        async function fetchPrayerTimes() {
+            const lat = -5.429444; const lng = 105.2625; const method = 20; 
+            const promises = [];
+            for (let m = startMonth + 1; m <= endMonth + 1; m++) {
+                const url = `https://api.aladhan.com/v1/calendar/${targetYear}/${m}?latitude=${lat}&longitude=${lng}&method=${method}`;
+                promises.push(fetch(url).then(res => res.json()));
+            }
+            try {
+                const results = await Promise.all(promises);
+                results.forEach((data, index) => {
+                    const monthIndex = startMonth + index; 
+                    if (data.code === 200 && data.data) {
+                        data.data.forEach(dayData => {
+                            const d = dayData.date.gregorian;
+                            const dateKey = `${targetYear}-${monthIndex}-${parseInt(d.day)}`;
+                            let dhuhr = dayData.timings.Dhuhr.replace(/\s*\(.*?\)\s*/g, ''); 
+                            prayerTimesCache[dateKey] = dhuhr;
+                        });
+                    }
+                });
+            } catch (error) { console.error("Gagal ambil jadwal sholat", error); }
+        }
+
+        function toggleAccordion(monthIndex) {
+            const content = document.getElementById(`content-${monthIndex}`);
+            const icon = document.getElementById(`icon-${monthIndex}`);
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                icon.style.transform = "rotate(0deg)";
+            } else {
+                document.querySelectorAll('.accordion-content').forEach(el => el.style.maxHeight = null);
+                document.querySelectorAll('.accordion-icon').forEach(el => el.style.transform = "rotate(0deg)");
+                content.style.maxHeight = content.scrollHeight + "px";
+                icon.style.transform = "rotate(180deg)";
+            }
+        }
+
+        async function initJumatApp() {
+            await fetchPrayerTimes();
+            generateJumatSchedule();
+            document.getElementById('loading-indicator').classList.add('hidden');
+            document.getElementById('schedule-container').classList.remove('hidden');
+        }
+
+        function generateJumatSchedule() {
+            const container = document.getElementById('schedule-container');
+            container.innerHTML = ''; 
+            for (let month = startMonth; month <= endMonth; month++) {
+                let fridays = [];
+                let date = new Date(targetYear, month, 1);
+                while (date.getDay() !== 5) date.setDate(date.getDate() + 1);
+                while (date.getMonth() === month) {
+                    fridays.push(new Date(date));
+                    date.setDate(date.getDate() + 7);
+                }
+
+                const monthItem = document.createElement('div');
+                monthItem.className = "bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-shadow duration-300 hover:shadow-md";
+                
+                let accordionHeader = `
+                    <button onclick="toggleAccordion(${month})" class="w-full flex justify-between items-center p-4 bg-emerald-50/50 hover:bg-emerald-50 transition-colors duration-200 outline-none">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-serif font-bold text-emerald-800 border border-emerald-200">${month + 1}</span>
+                            <span class="font-bold text-emerald-900 text-base">${getMonthName(month)} ${targetYear}</span>
+                        </div>
+                        <i id="icon-${month}" class="accordion-icon fas fa-chevron-down text-emerald-400 transition-transform duration-300"></i>
+                    </button>
+                `;
+
+                let accordionBodyStart = `
+                    <div id="content-${month}" class="accordion-content transition-all duration-500 ease-in-out max-h-0 overflow-hidden bg-white">
+                        <div class="p-4 overflow-x-auto no-scrollbar flex space-x-4 snap-x snap-mandatory pb-6">
+                `;
+
+                let cards = "";
+                fridays.forEach((fridayDate, index) => {
+                    const weekNum = index + 1;
+                    const khatibName = khatibRotation[weekNum] ? khatibRotation[weekNum] : "Menunggu Konfirmasi";
+                    const hijriDate = getKemenagHijri(fridayDate);
+                    const dateKey = `${targetYear}-${month}-${fridayDate.getDate()}`;
+                    const adzanTime = prayerTimesCache[dateKey] || "12:00"; 
+
+                    cards += `
+                        <div class="snap-center flex-shrink-0 w-[80vw] sm:w-80 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-all p-4 relative">
+                             <div class="absolute top-0 left-0 w-1 h-full bg-emerald-500 rounded-l-lg"></div>
+                             <div class="flex items-center justify-between mb-3">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Pekan ${weekNum}</span>
+                                <span class="text-[10px] font-semibold text-white bg-gold-400 px-2 py-0.5 rounded shadow-sm flex items-center">
+                                    <i class="fas fa-bullhorn mr-1.5 text-[9px]"></i>Adzan: ${adzanTime}
+                                </span>
+                            </div>
+                            <h4 class="font-bold text-gray-800 text-sm mb-3 line-clamp-2 h-10 leading-snug">${khatibName}</h4>
+                            <div class="text-xs text-gray-600 bg-gray-50 p-2.5 rounded border border-gray-100 space-y-1.5">
+                                <div class="flex items-center">
+                                    <i class="far fa-calendar-alt w-5 text-center mr-1 text-gray-400"></i>
+                                    <span>${toMasehi(fridayDate)}</span>
+                                </div>
+                                <div class="flex items-center text-emerald-700 font-medium">
+                                    <i class="fas fa-moon w-5 text-center mr-1 text-emerald-500"></i>
+                                    <span>${hijriDate}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                let accordionBodyEnd = `</div><div class="text-center text-xs text-gray-400 pb-2 italic animate-pulse md:hidden"><i class="fas fa-arrows-alt-h mr-1"></i> Geser</div></div>`;
+                monthItem.innerHTML = accordionHeader + accordionBodyStart + cards + accordionBodyEnd;
+                container.appendChild(monthItem);
+            }
+            setTimeout(() => { toggleAccordion(1); }, 500); // Default open Feb
+        }
+
+        // --- LOGIC JADWAL TARAWIH (DARI FILE UPLOAD) ---
+        const tarawihData = [
+            { no: 1, date: "18 Feb", fullDate: "18 Februari 2026", night: "1", imam: "Bpk. Rufdi Y", bilal: "Bpk. Firman" },
+            { no: 2, date: "19 Feb", fullDate: "19 Februari 2026", night: "2", imam: "Ustadz A. Noor Islahudin", bilal: "Bpk. Firman" },
+            { no: 3, date: "20 Feb", fullDate: "20 Februari 2026", night: "3", imam: "Ustadz Septian Pratama", bilal: "Bpk. Firman" },
+            { no: 4, date: "21 Feb", fullDate: "21 Februari 2026", night: "4", imam: "Ustadz. Husnudin", bilal: "Bpk. Firman" },
+            { no: 5, date: "22 Feb", fullDate: "22 Februari 2026", night: "5", imam: "Ustadz Fathon Zein", bilal: "Bpk. Firman" },
+            { no: 6, date: "23 Feb", fullDate: "23 Februari 2026", night: "6", imam: "Ustadz Hanafi", bilal: "Bpk. Firman" },
+            { no: 7, date: "24 Feb", fullDate: "24 Februari 2026", night: "7", imam: "Ustadz A. Noor Islahudin", bilal: "Bpk. Firman" },
+            { no: 8, date: "25 Feb", fullDate: "25 Februari 2026", night: "8", imam: "Ustadz Septian Pratama", bilal: "Bpk. Firman" },
+            { no: 9, date: "26 Feb", fullDate: "26 Februari 2026", night: "9", imam: "Ustadz. Husnudin", bilal: "Bpk. Firman" },
+            { no: 10, date: "27 Feb", fullDate: "27 Februari 2026", night: "10", imam: "Ustadz Fathon Zein", bilal: "Bpk. Firman" },
+            { no: 11, date: "28 Feb", fullDate: "28 Februari 2026", night: "11", imam: "Ustadz Diaz Elfadani", bilal: "Bpk. Firman" },
+            { no: 12, date: "01 Mar", fullDate: "1 Maret 2026", night: "12", imam: "Bpk. Rufdi Y", bilal: "Bpk. Firman" },
+            { no: 13, date: "02 Mar", fullDate: "2 Maret 2026", night: "13", imam: "Bpk. Komarudin", bilal: "Bpk. Firman" },
+            { no: 14, date: "03 Mar", fullDate: "3 Maret 2026", night: "14", imam: "Bpk. Zia", bilal: "Bpk. Firman" },
+            { no: 15, date: "04 Mar", fullDate: "4 Maret 2026", night: "15", imam: "Bpk. Siregar", bilal: "Bpk. Firman" },
+            { no: 16, date: "05 Mar", fullDate: "5 Maret 2026", night: "16", imam: "Bpk. A. Latif", bilal: "Bpk. Firman" },
+            { no: 17, date: "06 Mar", fullDate: "6 Maret 2026", night: "17", imam: "Bpk. Rufdi Y", bilal: "Bpk. Firman" },
+            { no: 18, date: "07 Mar", fullDate: "7 Maret 2026", night: "18", imam: "Bpk. Komarudin", bilal: "Bpk. Firman" },
+            { no: 19, date: "08 Mar", fullDate: "8 Maret 2026", night: "19", imam: "Bpk. Siregar", bilal: "Bpk. Firman" },
+            { no: 20, date: "09 Mar", fullDate: "9 Maret 2026", night: "20", imam: "Bpk. A. Latif", bilal: "Bpk. Firman" },
+            { no: 21, date: "10 Mar", fullDate: "10 Maret 2026", night: "21", imam: "Bpk. Zia", bilal: "Bpk. Firman" },
+            { no: 22, date: "11 Mar", fullDate: "11 Maret 2026", night: "22", imam: "Bpk. Mukhlis", bilal: "Bpk. Firman" },
+            { no: 23, date: "12 Mar", fullDate: "12 Maret 2026", night: "23", imam: "Bpk. Nugik", bilal: "Bpk. Firman" },
+            { no: 24, date: "13 Mar", fullDate: "13 Maret 2026", night: "24", imam: "Bpk. Rufdi Y", bilal: "Bpk. Firman" },
+            { no: 25, date: "14 Mar", fullDate: "14 Maret 2026", night: "25", imam: "Bpk. Komarudin", bilal: "Bpk. Firman" },
+            { no: 26, date: "15 Mar", fullDate: "15 Maret 2026", night: "26", imam: "Bpk. A. Latif", bilal: "Bpk. Firman" },
+            { no: 27, date: "16 Mar", fullDate: "16 Maret 2026", night: "27", imam: "Bpk. Rufdi Y", bilal: "Bpk. Firman" },
+            { no: 28, date: "17 Mar", fullDate: "17 Maret 2026", night: "28", imam: "Bpk. Komarudin", bilal: "Bpk. Firman" },
+            { no: 29, date: "18 Mar", fullDate: "18 Maret 2026", night: "29", imam: "Bpk. Mukhlis", bilal: "Bpk. Firman" },
+            { no: 30, date: "19 Mar", fullDate: "19 Maret 2026", night: "30", imam: "Bpk. Nugik", bilal: "Bpk. Firman" }
+        ];
+
+        function renderTarawihSchedule(data) {
+            const listContainer = document.getElementById('tarawihList');
+            const emptyState = document.getElementById('emptyState');
+            listContainer.innerHTML = '';
+            
+            if (data.length === 0) {
+                emptyState.classList.remove('hidden'); return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            data.forEach(item => {
+                const nightNum = parseInt(item.night);
+                const isSpecialNight = nightNum >= 2 && nightNum <= 11;
+                
+                let wrapperClass = "flex items-center p-3 rounded-lg border shadow-sm transition-colors text-sm";
+                let badgeClass = "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full font-bold text-xs mr-3";
+                
+                if (isSpecialNight) {
+                    wrapperClass += " bg-amber-50 border-amber-200 hover:bg-amber-100";
+                    badgeClass += " bg-amber-200 text-amber-800";
+                } else {
+                    wrapperClass += " bg-white border-gray-100 hover:bg-gray-50";
+                    badgeClass += " bg-emerald-100 text-emerald-700";
+                }
+
+                const card = `
+                    <div class="${wrapperClass}">
+                        <div class="${badgeClass}">${item.night}</div>
+                        <div class="flex-grow min-w-0 grid grid-cols-1 md:grid-cols-12 gap-1 items-center">
+                            <div class="md:col-span-3 text-xs text-gray-500 font-medium truncate">${item.fullDate}</div>
+                            <div class="md:col-span-5 font-semibold text-gray-800 truncate">
+                                <span class="md:hidden text-[10px] text-gray-400 font-normal mr-1">Imam:</span>${item.imam}
+                            </div>
+                            <div class="md:col-span-4 text-gray-600 truncate text-xs md:text-sm">
+                                <span class="md:hidden text-[10px] text-gray-400 font-normal mr-1">Bilal:</span>${item.bilal}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                listContainer.innerHTML += card;
+            });
+        }
+
+        // --- INIT ALL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Init Jumat
+            initJumatApp();
+            
+            // Init Tarawih
+            renderTarawihSchedule(tarawihData);
+            
+            // Tarawih Search Logic
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                const keyword = e.target.value.toLowerCase();
+                const filtered = tarawihData.filter(item => 
+                    item.imam.toLowerCase().includes(keyword) || 
+                    item.fullDate.toLowerCase().includes(keyword) ||
+                    item.bilal.toLowerCase().includes(keyword) ||
+                    item.night === keyword
+                );
+                renderTarawihSchedule(filtered);
+            });
+        });
+
+    </script>
+</body>
+</html>
+
+
